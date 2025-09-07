@@ -9,14 +9,13 @@ use std::{
     }
 };
 use crate::{
-    middlewares::Middlewares, 
-    request::HttpRequest, 
-    response::HttpResponse
+    router::Middlewares,
+    router::request::HttpRequest, 
+    router::response::HttpResponse
 };
 
-pub mod request;
-pub mod response;
-pub mod middlewares;
+pub mod router;
+pub mod extras; // Difficulty helpful middlewares
 
 pub struct Http {
     middlewares: Middlewares
@@ -46,6 +45,18 @@ impl Http  {
 
     pub fn use_middleware<F: Fn(&HttpRequest, &mut HttpResponse) + 'static + Send + Sync>(&mut self, middleware: F) {
         self.middlewares.add(middleware);
+    }
+
+    pub fn get<F: Fn(&HttpRequest, &mut HttpResponse) + 'static + Send + Sync>(&mut self, route: &str, middleware: F) {
+        self.middlewares.add_route(route, "GET", middleware);
+    }
+
+    pub fn post<F: Fn(&HttpRequest, &mut HttpResponse) + 'static + Send + Sync>(&mut self, route: &str, middleware: F) {
+        self.middlewares.add_route(route, "POST", middleware);
+    }
+
+    pub fn put<F: Fn(&HttpRequest, &mut HttpResponse) + 'static + Send + Sync>(&mut self, route: &str, middleware: F) {
+        self.middlewares.add_route(route, "PUT", middleware);
     }
 
     fn requests_handler(&self, stream: &mut TcpStream) {
