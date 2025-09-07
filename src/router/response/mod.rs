@@ -28,51 +28,26 @@ impl<'a> HttpResponse<'a> {
         self.headers.set_headers("Content-Length", res.len().to_string().as_str());
         
         let response: String = format!("{}{}", self.headers.build_headers_string(), res);
-        println!("{}", response);
-        
-        self.stream.write_all(response.as_bytes()).unwrap();
-        self.stream.flush().unwrap();
-    }
-
-    pub fn send_status(&mut self, status_code: u16, message: &str) {
-        let status_text: &str = match status_code {
-            200 => "OK",
-            201 => "Created",
-            400 => "Bad Request",
-            404 => "Not Found",
-            500 => "Internal Server Error",
-            _ => "Unknown",
-        };
-        
-        let response: String = format!(
-            "HTTP/1.1 {} {}\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-            status_code,
-            status_text,
-            message.len(),
-            message
-        );
         
         self.stream.write_all(response.as_bytes()).unwrap();
         self.stream.flush().unwrap();
     }
 
     pub fn send_html(&mut self, content: &str) {
-        let response: String = format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        );
+        self.headers.set_headers("Content-Type", "text/html");
+        self.headers.set_headers("Content-Length", content.len().to_string().as_str());
+
+        let response: String = format!("{}{}", self.headers.build_headers_string(), content);
         
         self.stream.write_all(response.as_bytes()).unwrap();
         self.stream.flush().unwrap();
     }
 
     pub fn send_json(&mut self, content: &str) {
-        let response: String = format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        );
+        self.headers.set_headers("Content-Type", "application/json");
+        self.headers.set_headers("Content-Length", content.len().to_string().as_str());
+
+        let response: String = format!("{}{}", self.headers.build_headers_string(), content);
         
         self.stream.write_all(response.as_bytes()).unwrap();
         self.stream.flush().unwrap();
@@ -83,11 +58,10 @@ impl<'a> HttpResponse<'a> {
         let mut buffer: Vec<u8> = Vec::new();
         file.read_to_end(&mut buffer).expect("Не удалось записать данные из файла");
 
-        let response: String = format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\n\r\n",
-            get_content_type(path),
-            buffer.len()
-        );
+        self.headers.set_headers("Content-Type", get_content_type(path));
+        self.headers.set_headers("Content-Length", buffer.len().to_string().as_str());
+
+        let response: String = format!("{}", self.headers.build_headers_string());
         
         self.stream.write_all(response.as_bytes()).unwrap();
         self.stream.write_all(&buffer).unwrap();
@@ -95,10 +69,13 @@ impl<'a> HttpResponse<'a> {
     }
 
     pub fn redirect(&mut self, location: &str) {
-        let response: String = format!(
-            "HTTP/1.1 302 Found\r\nLocation: {}\r\nContent-Length: 0\r\n\r\n",
-            location
-        );
+        self.headers.delete_headers("Content-Type");
+
+        self.headers.status_code = 302;
+        self.headers.set_headers("Location", location);
+        self.headers.set_headers("Content-Length", "0");
+
+        let response: String = format!("{}", self.headers.build_headers_string());
         
         self.stream.write_all(response.as_bytes()).unwrap();
         self.stream.flush().unwrap();

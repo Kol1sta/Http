@@ -27,6 +27,7 @@ impl Headers {
         match self.status_code {
             200 => "OK",
             201 => "Created",
+            302 => "Found",
             404 => "Not Found",
             500 => "Internal Server Error",
             _ => "Unknown"
