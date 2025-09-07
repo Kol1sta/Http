@@ -3,24 +3,32 @@ use std::io::{Write, prelude::*};
 use std::fs::File;
 use get_content_type::get_content_type;
 
+use crate::router::response::headers::Headers;
+
 pub mod get_content_type;
+pub mod headers;
 
 #[derive(Debug)]
 pub struct HttpResponse<'a> {
     stream: &'a mut TcpStream,
+    pub headers: Headers
 }
 
 impl<'a> HttpResponse<'a> {
     pub fn new(stream: &'a mut TcpStream) -> Self {
-        HttpResponse { stream }
+        HttpResponse { stream, headers: Headers::new() }
+    }
+
+    pub fn create(stream: &'a mut TcpStream) -> Self {
+        Self::new(stream)
     }
 
     pub fn send(&mut self, res: &str) {
-        let response: String = format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-            res.len(),
-            res
-        );
+        self.headers.set_headers("Content-Type", "text/plain");
+        self.headers.set_headers("Content-Length", res.len().to_string().as_str());
+        
+        let response: String = format!("{}{}", self.headers.build_headers_string(), res);
+        println!("{}", response);
         
         self.stream.write_all(response.as_bytes()).unwrap();
         self.stream.flush().unwrap();

@@ -23,9 +23,7 @@ pub struct Http {
 
 impl Http  {
     pub fn new() -> Self {
-        Http {
-            middlewares: Middlewares::new()
-        }
+        Http { middlewares: Middlewares::new() }
     }
 
     pub fn create() -> Self {
@@ -64,8 +62,8 @@ impl Http  {
 
         stream.read(&mut buffer).expect("Не удалость записать поток в буффер");
         let request: String = String::from_utf8_lossy(&buffer[..]).to_string();
-        let mut response: HttpResponse = HttpResponse::new(stream);
         let request: HttpRequest = HttpRequest::new(&request);
+        let mut response: HttpResponse = HttpResponse::new(stream);
         
         self.middlewares.execute(&request, &mut response);
     }
