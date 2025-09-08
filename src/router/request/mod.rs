@@ -1,13 +1,10 @@
-use std::str::{Lines, SplitN, SplitWhitespace};
-use http_body_params::HttpBodyParams;
-
-pub mod http_body_params;
+use std::{collections::HashMap, str::{Lines, SplitN, SplitWhitespace}};
 
 pub struct HttpRequest {
     pub route: String,
     pub method: String,
-    pub headers: Vec<String>,
-    pub body: Vec<HttpBodyParams>
+    pub headers: HashMap<String, String>,
+    pub body: HashMap<String, String>
 }
 
 impl HttpRequest {
@@ -19,7 +16,7 @@ impl HttpRequest {
         let method: String = parts.next().unwrap_or("GET").to_string();
         let route: String = parts.next().unwrap_or("/").to_string();
         
-        let mut headers: Vec<String> = Vec::new();
+        let mut headers: HashMap<String, String> = HashMap::new();
         let mut content_length: Option<usize> = None;
 
         for line in lines.by_ref() {
@@ -27,13 +24,14 @@ impl HttpRequest {
                 break;
             }
 
-            let header_line: String = line.to_string();
-            headers.push(header_line.clone());
+            let mut header = line.split(":");
 
-            if header_line.to_lowercase().starts_with("content-length:") {
-                if let Some(length_str) = header_line.split(':').nth(1) {
-                    content_length = length_str.trim().parse().ok();
+            if let (Some(key), Some(value)) = (header.next(), header.next()) {
+                if key.to_lowercase().starts_with("content-length:") {
+                    content_length = value.trim().parse().ok()
                 }
+
+                headers.insert(key.to_string(), value.to_string());
             }
         }
 
@@ -46,12 +44,12 @@ impl HttpRequest {
             remaining_content
         };
 
-        let mut body: Vec<HttpBodyParams> = Vec::new();
+        let mut body: HashMap<String, String> = HashMap::new();
 
         for param_pair in body_string.split('&') {
             let mut parts: SplitN<'_, char> = param_pair.splitn(2, '=');
             if let (Some(key), Some(value)) = (parts.next(), parts.next()) {
-                body.push(HttpBodyParams::new(key.to_owned().into_boxed_str(), value.to_owned().into_boxed_str()));
+                body.insert(key.to_owned(), value.to_owned());
             }
         }
 
