@@ -1,9 +1,9 @@
 use crate::{router::{request::HttpRequest, response::HttpResponse}, Http};
 
 pub struct CorsOptions {
-    origin: Vec<&'static str>,
-    methods: Vec<&'static str>,
-    allowed_headers: Vec<&'static str>,
+    origin: Vec<String>,
+    methods: Vec<String>,
+    allowed_headers: Vec<String>,
     credentials: bool,
     max_age: Option<u32>
 }
@@ -19,9 +19,9 @@ impl CorsOptions {
     
     pub fn default() -> Self {
         CorsOptions {
-            origin: vec!["*"],
-            methods: vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allowed_headers: vec!["Content-Type", "Authorization"],
+            origin: vec!["*".to_string()],
+            methods: vec!["GET".to_string(), "POST".to_string(), "PUT".to_string(), "DELETE".to_string(), "OPTIONS".to_string()],
+            allowed_headers: vec!["Content-Type".to_string(), "Authorization".to_string()],
             credentials: false,
             max_age: Some(86400)
         }
@@ -43,12 +43,12 @@ impl CorsOptions {
         })
     }
 
-    pub fn with_origin(mut self, origin: &'static str) -> Self {
-        self.origin = vec![origin];
+    pub fn with_origin(mut self, origin: Vec<String>) -> Self {
+        self.origin = origin;
         self
     }
     
-    pub fn with_methods(mut self, methods: Vec<&'static str>) -> Self {
+    pub fn with_methods(mut self, methods: Vec<String>) -> Self {
         self.methods = methods;
         self
     }
