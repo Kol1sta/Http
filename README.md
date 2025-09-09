@@ -6,6 +6,7 @@ Simple framework for creating web-servers written in Rust
 - Middlewares
 - Cors
 - Routing
+- Cookies
 
 ### Example
 ```rust
