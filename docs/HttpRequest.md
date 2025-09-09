@@ -1,9 +1,11 @@
 # HttpRequest
 ```rs
 pub struct HttpRequest {
+    pub req_string: String,
     pub route: String,
     pub method: String,
     pub headers: HashMap<String, String>,
+    pub cookies: HashMap<String, String>,
     pub body: HashMap<String, String>
 }
 ```
