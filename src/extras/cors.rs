@@ -43,22 +43,22 @@ impl CorsOptions {
         })
     }
 
-    pub fn with_origin(mut self, origin: Vec<String>) -> Self {
+    pub fn origin(mut self, origin: Vec<String>) -> Self {
         self.origin = origin;
         self
     }
     
-    pub fn with_methods(mut self, methods: Vec<String>) -> Self {
+    pub fn methods(mut self, methods: Vec<String>) -> Self {
         self.methods = methods;
         self
     }
     
-    pub fn with_credentials(mut self, credentials: bool) -> Self {
+    pub fn credentials(mut self, credentials: bool) -> Self {
         self.credentials = credentials;
         self
     }
     
-    pub fn with_max_age(mut self, max_age: Option<u32>) -> Self {
+    pub fn max_age(mut self, max_age: Option<u32>) -> Self {
         self.max_age = max_age;
         self
     }

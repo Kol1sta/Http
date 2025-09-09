@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::{Lines, SplitN, SplitWhitespace}};
+use std::{collections::HashMap, str::{Lines, Split, SplitN, SplitWhitespace}};
 
 pub struct HttpRequest {
     pub route: String,
@@ -24,7 +24,7 @@ impl HttpRequest {
                 break;
             }
 
-            let mut header = line.split(":");
+            let mut header: Split<'_, &'static str> = line.split(":");
 
             if let (Some(key), Some(value)) = (header.next(), header.next()) {
                 if key.to_lowercase().starts_with("content-length:") {

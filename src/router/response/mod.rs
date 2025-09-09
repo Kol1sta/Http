@@ -3,20 +3,24 @@ use std::io::{Write, prelude::*};
 use std::fs::File;
 use get_content_type::get_content_type;
 
+use crate::router::response::cookies::Cookie;
+use crate::router::response::cookies::Cookies;
 use crate::router::response::headers::Headers;
 
 pub mod get_content_type;
 pub mod headers;
+pub mod cookies;
 
 #[derive(Debug)]
 pub struct HttpResponse<'a> {
     stream: &'a mut TcpStream,
-    pub headers: Headers
+    pub headers: Headers,
+    pub cookies: Cookies
 }
 
 impl<'a> HttpResponse<'a> {
     pub fn new(stream: &'a mut TcpStream) -> Self {
-        HttpResponse { stream, headers: Headers::new() }
+        HttpResponse { stream, headers: Headers::new(), cookies: Cookies::new() }
     }
 
     pub fn create(stream: &'a mut TcpStream) -> Self {
@@ -79,5 +83,10 @@ impl<'a> HttpResponse<'a> {
         
         self.stream.write_all(response.as_bytes()).unwrap();
         self.stream.flush().unwrap();
+    }
+
+    pub fn set_cookie(&mut self, cookie: Cookie) {
+        self.cookies.add(cookie);
+        self.headers.set_headers("Set-Cookie", &self.cookies.build_cookie());
     }
 }

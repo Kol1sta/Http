@@ -34,6 +34,10 @@ impl Headers {
         }
     }
 
+    pub fn set_cookie(&mut self, key: &str, value: &str) {
+        self.set_headers("Set-Cookie", "");
+    }
+
     pub fn build_headers_string(&self) -> String {
         let mut result: String = String::from(format!("HTTP/1.1 {} {}\r\n", self.status_code, self.get_status_text()));
         for (key, value) in &self.headers {
