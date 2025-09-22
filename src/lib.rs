@@ -2,21 +2,22 @@ use std::{
     io::{
         self,
         Read
-    }, 
+    },
     net::{
-        TcpListener, 
+        TcpListener,
         TcpStream
     }
 };
 use crate::{
-    router::Middlewares,
-    router::request::HttpRequest, 
-    router::response::HttpResponse
+    router::{request::HttpRequest, response::HttpResponse, Middlewares},
+    threads::ThreadPool
 };
 
 pub mod router;
 pub mod extras; // Difficulty helpful middlewares
+pub mod threads;
 
+#[derive(Clone)]
 pub struct Http {
     middlewares: Middlewares
 }
@@ -34,8 +35,15 @@ impl Http  {
         let listener: TcpListener = TcpListener::bind(format!("{}:{}", host, port)).expect("Не удалось создать сервер");
         on_start();
 
+        let pool = ThreadPool::new(8);
+
         for stream in listener.incoming() {
-            Self::requests_handler(&self, &mut stream?);
+            let mut stream = stream?;
+            let self_clone = self.clone();
+
+            pool.execute(move || {
+                Self::requests_handler(&self_clone, &mut stream);
+            });
         }
 
         Ok(())
@@ -64,7 +72,7 @@ impl Http  {
         let request: String = String::from_utf8_lossy(&buffer[..]).to_string();
         let request: HttpRequest = HttpRequest::new(&request);
         let mut response: HttpResponse = HttpResponse::new(stream);
-        
+
         self.middlewares.execute(&request, &mut response);
     }
 }

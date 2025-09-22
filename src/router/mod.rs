@@ -5,6 +5,7 @@ pub mod middleware;
 pub mod request;
 pub mod response;
 
+#[derive(Clone)]
 pub struct Middlewares {
     handlers: Vec<Middleware>
 }

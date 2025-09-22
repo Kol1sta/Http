@@ -3,6 +3,7 @@ use crate::{router::request::HttpRequest, router::response::HttpResponse};
 
 pub type Handler = Arc<dyn Fn(&HttpRequest, &mut HttpResponse) + Send + Sync>;
 
+#[derive(Clone)]
 pub struct Middleware {
     pub route: Option<String>,
     pub method: Option<String>,
